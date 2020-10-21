@@ -7,7 +7,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
+import com.eight_centimeter.android.upload_avatar_demo.utils.ImageFileUtil
 import com.eight_centimeter.android.upload_avatar_demo.utils.UploadAvatarHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import permissions.dispatcher.*
@@ -20,11 +22,15 @@ class MainActivity : AppCompatActivity() {
         ivPortrait.setOnClickListener {
             showImagePickerDialog()
         }
+        btSave.setOnClickListener {
+            ImageFileUtil.saveInMedia(this, ivPortrait.drawable.toBitmap())
+        }
     }
+
     private fun showImagePickerDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("please_select_picture")
-            .setItems(arrayOf("take","choose")) { _, which ->
+            .setItems(arrayOf("take", "choose")) { _, which ->
                 if (which == 0) {
                     openCameraWithPermissionCheck()
                 } else {

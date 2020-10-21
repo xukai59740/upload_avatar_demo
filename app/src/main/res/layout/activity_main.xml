@@ -33,5 +33,10 @@
 
         </RelativeLayout>
 
+        <Button
+            android:id="@+id/btSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Saved" />
     </LinearLayout>
 </ScrollView>
