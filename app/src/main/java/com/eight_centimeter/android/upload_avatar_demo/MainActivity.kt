@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
 import com.eight_centimeter.android.upload_avatar_demo.utils.ImageFileUtil
 import com.eight_centimeter.android.upload_avatar_demo.utils.UploadAvatarHelper
@@ -23,20 +22,21 @@ class MainActivity : AppCompatActivity() {
             showImagePickerDialog()
         }
         btSave.setOnClickListener {
-            ImageFileUtil.saveInMedia(this, ivPortrait.drawable.toBitmap())
+            val disposable = ImageFileUtil.saveUrlInMedia(this,  "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1603436697044&di=dece60f3c9e73e07043e3651dd3da3be&imgtype=0&src=http%3A%2F%2Fwww.ruiqi6.com%2Fzb_users%2Fupload%2F2017%2F04%2F20170428115034526536876.jpg")
+            uploadAvatarHelper.addCompositeDisposable(disposable)
         }
     }
 
     private fun showImagePickerDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("please_select_picture")
-            .setItems(arrayOf("take", "choose")) { _, which ->
-                if (which == 0) {
-                    openCameraWithPermissionCheck()
-                } else {
-                    uploadAvatarHelper.getChooseImageIntent()
+                .setItems(arrayOf("take", "choose")) { _, which ->
+                    if (which == 0) {
+                        openCameraWithPermissionCheck()
+                    } else {
+                        uploadAvatarHelper.getChooseImageIntent()
+                    }
                 }
-            }
         builder.create().show()
     }
 
@@ -72,9 +72,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("NeedOnRequestPermissionsResult")
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onRequestPermissionsResult(requestCode, grantResults)

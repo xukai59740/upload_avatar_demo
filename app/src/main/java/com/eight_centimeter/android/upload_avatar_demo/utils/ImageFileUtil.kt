@@ -8,17 +8,40 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.ImageView
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
+import com.bumptech.glide.Glide
 import com.eight_centimeter.android.upload_avatar_demo.BuildConfig
+import com.eight_centimeter.android.upload_avatar_demo.load
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import org.apache.commons.io.IOUtils
 import java.io.*
 import java.util.*
 
 
 object ImageFileUtil {
 
-    fun saveInMedia(context: Context, bitmap: Bitmap): Uri? {
+    fun saveUrlInMedia(context: Context, url: String): Disposable {
+        return Single.just(Unit)
+                .subscribeOn(Schedulers.io())
+                .flatMap {
+                    val file = Glide.with(context).downloadOnly().load(url).submit().get()
+                    Single.just(file)
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    saveInMedia(context, it)
+                }, {
+
+                })
+    }
+
+    fun saveInMedia(context: Context, file: File): Uri? {
         // insert media
         val contentUri = if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -29,8 +52,8 @@ object ImageFileUtil {
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/*")
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
             contentValues.put(
-                MediaStore.Images.Media.RELATIVE_PATH,
-                Environment.DIRECTORY_DCIM + File.separator
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    Environment.DIRECTORY_DCIM + File.separator
             )
             contentValues.put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
@@ -40,7 +63,7 @@ object ImageFileUtil {
         var os: OutputStream? = null
         return try {
             os = context.contentResolver.openOutputStream(uri)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
+            IOUtils.copy(FileInputStream(file), os!!)
             contentValues.clear()
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
@@ -61,6 +84,31 @@ object ImageFileUtil {
         }
     }
 
+    private fun writeFileFromIS(os: OutputStream, inputS: InputStream): Boolean {
+        return try {
+            val data = ByteArray(8192)
+            var len: Int
+            while (inputS.read(data, 0, 8192).also { len = it } != -1) {
+                os.write(data, 0, len)
+            }
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        } finally {
+            try {
+                inputS.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+            try {
+                os.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     /**
      * if samsung take photo , the image be Rotate 90°， fix it
      */
@@ -74,17 +122,17 @@ object ImageFileUtil {
                     matrix.setRotate(degree.toFloat())
                     //android:largeHeap="true"
                     val bitmap: Bitmap =
-                        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                     val returnBm =
-                        Bitmap.createBitmap(
-                            bitmap,
-                            0,
-                            0,
-                            bitmap.width,
-                            bitmap.height,
-                            matrix,
-                            true
-                        )
+                            Bitmap.createBitmap(
+                                    bitmap,
+                                    0,
+                                    0,
+                                    bitmap.width,
+                                    bitmap.height,
+                                    matrix,
+                                    true
+                            )
                     val destFile = createNewJPGFile(context)
 
                     out = FileOutputStream(destFile.path)
@@ -107,8 +155,8 @@ object ImageFileUtil {
             inputStream?.let {
                 val exifInterface = ExifInterface(inputStream)
                 val orientation: Int = exifInterface.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
+                        ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL
                 )
                 when (orientation) {
                     ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
@@ -160,9 +208,9 @@ object ImageFileUtil {
     private fun convertFileToUriByProvider(context: Context, file: File): Uri {
         //content:///application.fileprovider/external_file_dcim/123123123.jpg
         val imageUri = FileProvider.getUriForFile(
-            context,
-            BuildConfig.APPLICATION_ID + ".fileprovider",
-            file
+                context,
+                BuildConfig.APPLICATION_ID + ".fileprovider",
+                file
         )
         return imageUri!!
     }

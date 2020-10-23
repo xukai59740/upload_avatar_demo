@@ -10,6 +10,7 @@ import com.yalantis.ucrop.UCrop
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 
@@ -115,6 +116,10 @@ class UploadAvatarHelper(
             }, {
                 callBackError.invoke(it)
             })
+        compositeDisposable.add(disposable)
+    }
+
+    fun addCompositeDisposable(disposable:Disposable){
         compositeDisposable.add(disposable)
     }
 
