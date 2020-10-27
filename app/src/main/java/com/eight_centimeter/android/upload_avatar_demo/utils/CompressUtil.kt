@@ -12,14 +12,24 @@ import java.io.OutputStream
 
 object CompressUtil {
 
-    fun compression(file: File, context: Context): File {
+
+    val MB_2: Int = 1024 * 1024 * 2
+    val MB_3: Int = 1024 * 1024 * 3
+    val MB_4: Int = 1024 * 1024 * 4
+    val MB_5: Int = 1024 * 1024 * 5
+
+    fun compression(
+            file: File,
+            context: Context,
+            once: Boolean = false,
+            minSizeKB: Int = 614400 // size > 600 KB
+    ): File {
         val quality = getQuality(file)
-        // size > 600 KB
-        if (file.length() > 614400) {
+        if (file.length() > minSizeKB) {
             val destFile = ImageFileUtil.createNewJPGFile(context)
             massCompression(Uri.fromFile(file), context.contentResolver, destFile, quality)
-            val mb = destFile.length() / 1024 / 1024
-            return if (mb < 5) {
+            if (once) return destFile
+            return if (destFile.length() < MB_5) {
                 destFile
             } else {
                 compression(destFile, context)

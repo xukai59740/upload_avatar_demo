@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.core.net.toUri
+import com.eight_centimeter.android.upload_avatar_demo.utils.CompressUtil.MB_4
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -66,7 +67,8 @@ class UploadImageHelper(
                     try {
                         val imageUri = ImageFileUtil.fixBitmapRotate(activity, uri)
                         val copyFile = ImageFileUtil.copyFileFromFileDescriptor(activity, imageUri)
-                        Single.just(copyFile)
+                        val compressFile = CompressUtil.compression(copyFile,activity,true, MB_4)
+                        Single.just(compressFile)
                     } catch (e: Exception) {
                         Single.error<Throwable>(Throwable(""))
                     }
