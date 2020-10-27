@@ -8,13 +8,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.widget.ImageView
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.bumptech.glide.Glide
 import com.eight_centimeter.android.upload_avatar_demo.BuildConfig
-import com.eight_centimeter.android.upload_avatar_demo.load
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -41,7 +39,7 @@ object ImageFileUtil {
                 })
     }
 
-    fun saveInMedia(context: Context, file: File): Uri? {
+    private fun saveInMedia(context: Context, file: File): Uri? {
         // insert media
         val contentUri = if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -90,36 +88,34 @@ object ImageFileUtil {
      * if samsung take photo , the image be Rotate 90°， fix it
      */
     fun fixBitmapRotate(context: Context, uri: Uri): Uri {
-        if (DeviceUtils.isSamsung()) {
-            var out: OutputStream? = null
-            try {
-                val degree = getBitmapDegree(context, uri)
-                if (degree != 0) {
-                    val matrix = Matrix()
-                    matrix.setRotate(degree.toFloat())
-                    //android:largeHeap="true"
-                    val bitmap: Bitmap =
-                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                    val returnBm =
-                            Bitmap.createBitmap(
-                                    bitmap,
-                                    0,
-                                    0,
-                                    bitmap.width,
-                                    bitmap.height,
-                                    matrix,
-                                    true
-                            )
-                    val destFile = createNewJPGFile(context)
+        var out: OutputStream? = null
+        try {
+            val degree = getBitmapDegree(context, uri)
+            if (degree != 0) {
+                val matrix = Matrix()
+                matrix.setRotate(degree.toFloat())
+                //android:largeHeap="true"
+                val bitmap: Bitmap =
+                        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                val returnBm =
+                        Bitmap.createBitmap(
+                                bitmap,
+                                0,
+                                0,
+                                bitmap.width,
+                                bitmap.height,
+                                matrix,
+                                true
+                        )
+                val destFile = createNewJPGFile(context)
 
-                    out = FileOutputStream(destFile.path)
-                    returnBm.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                    return destFile.toUri()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                out?.close()
+                out = FileOutputStream(destFile.path)
+                returnBm.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                return destFile.toUri()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            out?.close()
         }
         return uri
     }
