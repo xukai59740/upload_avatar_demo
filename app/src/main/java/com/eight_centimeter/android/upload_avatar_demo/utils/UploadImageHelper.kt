@@ -76,14 +76,14 @@ class UploadImageHelper(
                     callBackFirst.invoke((it as File).toUri())
                 }, {
                 })
-        compositeDisposable.add(disposable)
+        addCompositeDisposable(disposable)
     }
 
     private fun cleanUri() {
         takeUri = null
     }
 
-    fun addCompositeDisposable(disposable: Disposable) {
+    private fun addCompositeDisposable(disposable: Disposable) {
         compositeDisposable.add(disposable)
     }
 

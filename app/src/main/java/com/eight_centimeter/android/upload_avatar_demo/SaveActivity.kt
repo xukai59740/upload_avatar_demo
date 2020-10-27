@@ -74,4 +74,9 @@ class SaveActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun onDestroy() {
+        uploadImageHelper.clean()
+        super.onDestroy()
+    }
+
 }
