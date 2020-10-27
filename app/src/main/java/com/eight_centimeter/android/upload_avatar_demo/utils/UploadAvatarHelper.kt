@@ -23,6 +23,7 @@ import java.io.File
  * yalantis:ucrop library
  * ImageFileUtil
  * CompressUtil
+ * IOUtils libs
  */
 class UploadAvatarHelper(
     private val activity: Activity,

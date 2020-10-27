@@ -21,7 +21,6 @@ class SaveActivity : AppCompatActivity() {
 
     }
 
-
     private fun showImagePickerDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("please_select_picture")
