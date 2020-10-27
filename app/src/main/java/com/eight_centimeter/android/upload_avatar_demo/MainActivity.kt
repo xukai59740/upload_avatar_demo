@@ -24,6 +24,9 @@ class MainActivity : AppCompatActivity() {
         btSave.setOnClickListener {
             saveFileWithPermissionCheck()
         }
+        btGoNext.setOnClickListener {
+            startActivity(Intent(this, SaveActivity::class.java))
+        }
     }
 
     private fun showImagePickerDialog() {

@@ -185,4 +185,14 @@ object ImageFileUtil {
         return imageUri!!
     }
 
+    fun copyFileFromFileDescriptor(context: Context, uri: Uri): File {
+        val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r", null)
+        val inputStream = FileInputStream(parcelFileDescriptor?.fileDescriptor)
+        val outFile = createNewJPGFile(context)
+        val outputStream = FileOutputStream(outFile)
+        IOUtils.copy(inputStream, outputStream)
+        return outFile
+    }
+
+
 }
