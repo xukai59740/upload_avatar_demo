@@ -50,7 +50,9 @@ object ImageFileUtil {
         val contentValues = ContentValues()
         contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, getTimeFileName())
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/*")
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+        contentValues.put(MediaStore.Images.Media.DATE_ADDED, Date().time)
+        contentValues.put(MediaStore.Images.Media.DATE_TAKEN, Date().time)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             contentValues.put(
                     MediaStore.Images.Media.RELATIVE_PATH,
                     Environment.DIRECTORY_DCIM + File.separator
@@ -65,10 +67,10 @@ object ImageFileUtil {
             os = context.contentResolver.openOutputStream(uri)
             IOUtils.copy(FileInputStream(file), os!!)
             contentValues.clear()
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                context.contentResolver.update(uri, contentValues, null, null)
             }
-            context.contentResolver.update(uri, contentValues, null, null)
             uri
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
@@ -78,31 +80,6 @@ object ImageFileUtil {
         } finally {
             try {
                 os?.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private fun writeFileFromIS(os: OutputStream, inputS: InputStream): Boolean {
-        return try {
-            val data = ByteArray(8192)
-            var len: Int
-            while (inputS.read(data, 0, 8192).also { len = it } != -1) {
-                os.write(data, 0, len)
-            }
-            true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        } finally {
-            try {
-                inputS.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-            try {
-                os.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -170,13 +147,6 @@ object ImageFileUtil {
             inputStream?.close()
             return degree
         }
-    }
-
-    fun getShareImageFolder(): File {
-        ///sdcard/dcim/images/123123123.jpg
-        val folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-        folder.mkdirs()
-        return folder
     }
 
     fun createNewJPGFile(context: Context): File {

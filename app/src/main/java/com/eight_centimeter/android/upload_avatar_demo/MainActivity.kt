@@ -22,8 +22,7 @@ class MainActivity : AppCompatActivity() {
             showImagePickerDialog()
         }
         btSave.setOnClickListener {
-            val disposable = ImageFileUtil.saveUrlInMedia(this,  "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1603436697044&di=dece60f3c9e73e07043e3651dd3da3be&imgtype=0&src=http%3A%2F%2Fwww.ruiqi6.com%2Fzb_users%2Fupload%2F2017%2F04%2F20170428115034526536876.jpg")
-            uploadAvatarHelper.addCompositeDisposable(disposable)
+            saveFileWithPermissionCheck()
         }
     }
 
@@ -68,6 +67,25 @@ class MainActivity : AppCompatActivity() {
 
     @OnNeverAskAgain(Manifest.permission.CAMERA)
     fun onCameraNeverAskAgain() {
+    }
+
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun saveFile() {
+        val disposable = ImageFileUtil.saveUrlInMedia(this,  "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1603436697044&di=dece60f3c9e73e07043e3651dd3da3be&imgtype=0&src=http%3A%2F%2Fwww.ruiqi6.com%2Fzb_users%2Fupload%2F2017%2F04%2F20170428115034526536876.jpg")
+        uploadAvatarHelper.addCompositeDisposable(disposable)
+    }
+
+    @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun showRationaleForSaveFile(request: PermissionRequest) {
+        request.proceed()
+    }
+
+    @OnPermissionDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun saveFileDenied() {
+    }
+
+    @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun saveFileNeverAskAgain() {
     }
 
     @SuppressLint("NeedOnRequestPermissionsResult")
