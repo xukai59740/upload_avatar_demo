@@ -19,8 +19,8 @@
 
             <ImageView
                 android:id="@+id/ivPortrait"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
                 android:src="@drawable/ic_launcher_background" />
 
             <androidx.core.widget.ContentLoadingProgressBar
