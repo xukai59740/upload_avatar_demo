@@ -11,12 +11,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import top.zibin.luban.Luban
+import top.zibin.luban.OnCompressListener
 import java.io.File
 
 
 class UploadImageHelper(
         private val activity: Activity,
-        private val callBackFirst: (uri: Uri) -> Unit
+        private val callBack: (uri: Uri) -> Unit
 ) {
 
     private val compositeDisposable = CompositeDisposable()
@@ -61,6 +63,26 @@ class UploadImageHelper(
     }
 
     private fun setPortrait(uri: Uri) {
+        val file = ImageFileUtil.copyFileFromFileDescriptor(activity, uri)
+        Luban.with(activity)
+            .load(file)
+            .ignoreBy(100)
+            .setTargetDir(ImageFileUtil.getCacheFolder(activity).absolutePath)
+            .setCompressListener(object : OnCompressListener {
+                override fun onStart() {
+                }
+
+                override fun onSuccess(file: File) {
+                    callBack.invoke(file.toUri())
+                }
+
+                override fun onError(e: Throwable) {
+                }
+            }).launch()
+
+    }
+
+    private fun setPortraitV2(uri: Uri) {
         val disposable = Single.just(Unit)
                 .subscribeOn(Schedulers.io())
                 .flatMap {
@@ -75,7 +97,7 @@ class UploadImageHelper(
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    callBackFirst.invoke((it as File).toUri())
+                    callBack.invoke((it as File).toUri())
                 }, {
                 })
         addCompositeDisposable(disposable)

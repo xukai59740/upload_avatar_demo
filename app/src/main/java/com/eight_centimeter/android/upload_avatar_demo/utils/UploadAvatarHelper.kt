@@ -12,6 +12,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import top.zibin.luban.Luban
+import top.zibin.luban.OnCompressListener
 import java.io.File
 
 /**
@@ -27,7 +29,7 @@ import java.io.File
  */
 class UploadAvatarHelper(
     private val activity: Activity,
-    private val callBackFirst: (uri: Uri) -> Unit,
+    private val callBackFirst: () -> Unit,
     private val callBackFinish: (uri: File) -> Unit,
     private val callBackError: (throwable: Throwable) -> Unit
 ) {
@@ -95,11 +97,31 @@ class UploadAvatarHelper(
         cutUri = outUri
     }
 
+    private fun callback(uri: Uri) {
+        Luban.with(activity)
+            .load(uri)
+            .ignoreBy(100)
+            .setTargetDir(ImageFileUtil.getCacheFolder(activity).absolutePath)
+            .setCompressListener(object : OnCompressListener {
+                override fun onStart() {
+                    callBackFirst.invoke()
+                }
+
+                override fun onSuccess(file: File) {
+                    callBackFinish.invoke(file)
+                }
+
+                override fun onError(e: Throwable) {
+                    callBackError.invoke(e)
+                }
+            }).launch()
+    }
+
     /**
      * handle the cut result, and call back
      */
-    private fun callback(uri: Uri) {
-        callBackFirst.invoke(uri)
+    private fun callbackv2(uri: Uri) {
+        callBackFirst.invoke()
         val disposable = Single.just(Unit)
             .subscribeOn(Schedulers.io())
             .flatMap {

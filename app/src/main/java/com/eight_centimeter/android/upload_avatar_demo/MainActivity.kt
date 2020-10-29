@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val uploadAvatarHelper by lazy {
-        UploadAvatarHelper(this, { uri ->
+        UploadAvatarHelper(this, {
             portraitLoadingProgressBar.isVisible = true
         }, { file ->
             portraitLoadingProgressBar.isVisible = false

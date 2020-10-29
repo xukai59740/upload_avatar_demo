@@ -151,10 +151,16 @@ object ImageFileUtil {
         }
     }
 
-    fun createNewJPGFile(context: Context): File {
-        ///sdcard/Android/data/asia.mworks.impulso.dev/cache/images/123123123.jpg
+    fun getCacheFolder(context: Context): File {
+        ///sdcard/Android/data/asia.mworks.impulso.dev/DCIM
         val folder = File(context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString())
         folder.mkdirs()
+        return folder
+    }
+
+    fun createNewJPGFile(context: Context): File {
+        val folder = getCacheFolder(context)
+        ///sdcard/Android/data/asia.mworks.impulso.dev/DCIM/123123123.jpg
         val file = File(folder, getTimeFileName())
         if (file.exists())
             file.delete()
